@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "club.schema.json",
+  "title": "Club",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["clubName"],
+  "properties": {
+    "clubName":    { "type": "string", "minLength": 1 },
+    "advisorName": { "type": "string" },
+    "description": { "type": "string" },
+    "meetingTime": { "type": "string" },
+    "siteMode":    { "type": "string", "enum": ["dynamic", "single", "multipage"] },
+    "officers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "role"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "role": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["title", "date"],
+        "properties": {
+          "title":       { "type": "string", "minLength": 1 },
+          "date":        { "type": "string", "format": "date" },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "awards": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["title", "year"],
+        "properties": {
+          "title": { "type": "string", "minLength": 1 },
+          "year":  { "type": "integer", "minimum": 1900, "maximum": 2100 }
+        }
+      }
+    },
+    "images": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    }
+  }
+}

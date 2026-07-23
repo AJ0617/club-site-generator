@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{pageTitle}}</title>
+    <meta name="description" content="{{metaDescription}}">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header" id="site-header">
+    <div class="container nav-inner">
+        <a href="index.html" class="brand">{{clubName}}</a>
+        <button class="nav-toggle" id="nav-toggle" aria-expanded="false"
+                aria-controls="nav-menu" aria-label="Toggle Navigation">
+            <span class="nav-toggle-bar"></span>
+            <span class="nav-toggle-bar"></span>
+            <span class="nav-toggle-bar"></span>
+        </button>
+        <nav>
+            <ul class="nav-menu" id="nav-menu">
+                {{navLinks}}
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<section class="hero" id="top>">
+    <div class="hero-overlay"></div>
+    <div class="container hero-content">
+        <h1 class="hero-title">{{clubName}}</h1>
+        <p class="hero-tagline">{{heroTagline}}</p>
+        <a href="{{heroCtaHref}}" class="btn btn-primary">Join Us</a>
+    </div>
+</section>
+<main>
+    {{mainContent}}
+</main>
+
+<footer class="site-footer">
+    <div class="container">
+        <p>&copy; {{year}} {{clubName}}. Built with the Club Site Generator.</p>
+    </div>
+</footer>
+
+<script>
+    (function () {
+        var toggle = document.getElementById('nav-toggle');
+        var menu = document.getElementById('nav-menu');
+        var header = document.getElementById('site-header');
+
+        toggle.addEventListener('click', function () {
+            var open = menu.classList.toggle('open');
+            toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+
+        menu.addEventListener('click', function (e) {
+            if (e.target.closest('a')) {
+                menu.classList.remove('open');
+                toggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+
+        function onScroll() {
+            if (window.scrollY > 40) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+            window.addEventListener('scroll', onScroll, {
+                passive: true
+            });
+        }
+
+        onScroll();
+
+    })();
+</script>
+
+</body>
+</html>
