@@ -1,16 +1,20 @@
 {
-    "name": "club-site-generator",
-    "version": "1.0.0",
-    "description": "Static site generator for school lub websites",
-    "private": true,
-    "scripts": {
-      "test": "jest",
-      "build": "node build.js"
-    },
-    "dependencies": {
-      "ajv": "^8.17.1",
-      "ajv-formats": "^3.0.1",
-      "sharp": "^0.35.3"
-
+  "name": "club-site-generator",
+  "version": "1.0.0",
+  "description": "Static site generator for school lub websites",
+  "private": true,
+  "scripts": {
+    "test": "jest",
+    "build": "node build.js",
+    "deploy": "wrangler deploy",
+    "preview": "wrangler dev"
+  },
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "sharp": "^0.35.3"
+  },
+  "devDependencies": {
+    "wrangler": "^4.114.0"
   }
 }
