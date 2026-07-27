@@ -37,6 +37,18 @@ simplest setup — the slug lives in exactly one place per project:
 | Deploy command | `npm run deploy` |
 | Build variable | `CLUB_SLUG=<slug>` |
 
+The variable's **name** is `CLUB_SLUG` and its **value** is the club's slug
+— the folder name under `websites/clubs/`, not the Worker name. For the
+existing club, that's:
+
+```
+CLUB_SLUG=example-club
+```
+
+`example-club` still deploys to the Worker `dynamic-example-club`, via the
+`LEGACY_NAMES` pin described below — the slug and the Worker name aren't
+required to match.
+
 **If it doesn't**, pass the slug explicitly in both commands instead:
 
 | Cloudflare project setting | Value |
