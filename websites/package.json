@@ -6,7 +6,7 @@
   "scripts": {
     "test": "jest",
     "build": "node build.js",
-    "deploy": "wrangler deploy",
+    "deploy": "node scripts/deploy.js",
     "preview": "wrangler dev"
   },
   "dependencies": {

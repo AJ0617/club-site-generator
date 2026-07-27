@@ -6,6 +6,7 @@ const path = require("path");
 const Ajv = require("ajv");
 const addFormats = require("ajv-formats");
 const sharp = require("sharp");
+const { resolveSlug } = require("./scripts/club-target");
 
 // ---------- Paths & constants ----------
 const ROOT = __dirname;
@@ -14,6 +15,7 @@ const TEMPLATE_DIR = path.join(ROOT, "template");
 const SECTIONS_DIR = path.join(TEMPLATE_DIR, "sections");
 const DIST_DIR = path.join(ROOT, "dist");
 const SCHEMA_PATH = path.join(ROOT, "club.schema.json");
+const BUILD_MARKER_PATH = path.join(ROOT, ".club-build-slug");
 
 const MAX_WIDTH = 1600;
 const JPEG_QUALITY = 80;
@@ -24,16 +26,26 @@ const RASTER_EXTS = [".jpg", ".jpeg", ".png", ".webp", ".tiff", ".gif"];
 // renders inline on index.html no matter how many officers there are.
 const SPLIT_THRESHOLDS = { events: 5, awards: 5, gallery: 8 };
 
-// ---------- CLI args: --club=<slug> (default example-club) ----------
+// ---------- CLI args: --club=<slug> (falls back to CLUB_SLUG env var, then example-club) ----------
 function parseArgs(argv) {
-    let club = "example-club";
-    for (const arg of argv.slice(2)) {
+    const args = argv.slice(2);
+    let explicitClub = null;
+    const unrecognized = [];
+    for (const arg of args) {
         const m = arg.match(/^--club=(.+)$/);
         if (m) {
-            club = m[1];
+            explicitClub = m[1];
         } else if (arg.startsWith("--")) {
-            console.warn(`⚠ Unrecognized flag "${arg}" — did you mean --club=<slug>? Ignoring it; building "${club}".`);
+            unrecognized.push(arg);
         }
+    }
+
+    // Resolved up front, after the whole argv has been scanned, so the
+    // warning below always reflects the club that will actually be built —
+    // not a stale value from before a later --club= flag was seen.
+    const club = resolveSlug(explicitClub);
+    for (const arg of unrecognized) {
+        console.warn(`⚠ Unrecognized flag "${arg}" — did you mean --club=<slug>? Ignoring it; building "${club}".`);
     }
     return { club };
 }
@@ -351,6 +363,15 @@ async function buildClub(slug, validate) {
 
     fs.copyFileSync(path.join(TEMPLATE_DIR, "style.css"), path.join(DIST_DIR, "style.css"));
     await copyAndOptimizeImages(clubDir);
+
+    // Records which club this build actually produced, so scripts/deploy.js
+    // (run as a separate command, possibly with its own --club= typed by
+    // hand in the Cloudflare dashboard) can refuse to publish if it's ever
+    // given a different slug than what was just built. Deliberately NOT
+    // inside dist/ — that directory is uploaded wholesale as public static
+    // assets, and this marker has no business being a fetchable file on
+    // the live site.
+    fs.writeFileSync(BUILD_MARKER_PATH, slug, "utf8");
 
     console.log(`✓ [${slug}] built → dist/{${generatedFiles.join(", ")}}`);
     return true;

@@ -1,4 +1,10 @@
 {
+  // NOTE: every club's Cloudflare project builds from this same file, so
+  // "name" below is only a fallback (used by plain local `wrangler deploy`
+  // calls). The real per-project Worker name is computed from CLUB_SLUG and
+  // passed as `--name` by `npm run deploy` (scripts/deploy.js), which
+  // overrides this value. See scripts/club-target.js for the slug->name
+  // mapping, including the legacy pin for this club.
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "dynamic-example-club",
   "compatibility_date": "2026-07-24",
