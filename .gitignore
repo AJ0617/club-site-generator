@@ -2,3 +2,4 @@
 node_modules/
 websites/dist/
 websites/.club-build-slug
+websites/.wrangler/

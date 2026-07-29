@@ -108,12 +108,17 @@ function renderAbout(club) {
 
 function renderOfficers(officers) {
     if (!officers || officers.length === 0) return "";
-    const itemsHtml = officers.map(o => `
+    const itemsHtml = officers.map(o => {
+        const avatar = o.photo
+            ? `<img class="officer-avatar" src="images/${encodeURIComponent(o.photo)}" alt="" loading="lazy">`
+            : `<div class="officer-avatar" aria-hidden="true">${escapeHtml(initials(o.name))}</div>`;
+        return `
         <li class="officer-card">
-          <div class="officer-avatar" aria-hidden="true">${escapeHtml(initials(o.name))}</div>
+          ${avatar}
           <span class="officer-name">${escapeHtml(o.name)}</span>
           <span class="officer-role">${escapeHtml(o.role)}</span>
-        </li>`).join("");
+        </li>`;
+    }).join("");
     return fillTokens(loadPartial("officers"), { itemsHtml });
 }
 

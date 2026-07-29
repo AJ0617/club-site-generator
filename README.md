@@ -11,6 +11,28 @@ node build.js --club=<slug>   # slug = a folder name under websites/clubs/
 
 Output is written to `websites/dist/` (wiped and rebuilt each run).
 
+## Adding officer photos
+
+By default, each officer on the site shows a circular avatar with their
+initials. You can replace that with a real photo:
+
+1. Put the image file in `websites/clubs/<slug>/images/` (create that
+   folder if it doesn't exist yet). This is the same folder used for the
+   photo gallery.
+2. In that club's `websites/clubs/<slug>/club.json`, add a `"photo"` field
+   to the officer's entry with the image's filename:
+   ```json
+   "officers": [
+     { "name": "Ava Chen", "role": "President", "photo": "ava-chen.jpg" },
+     { "name": "Marcus Bell", "role": "Vice President" }
+   ]
+   ```
+   `photo` is optional per officer — leave it out and that officer keeps
+   the initials avatar (as Marcus does above).
+3. Rebuild the site (`node build.js --club=<slug>`). Photos larger than
+   1600px wide are automatically resized and compressed, same as gallery
+   images.
+
 ## Deploying to Cloudflare
 
 Each club gets its **own** Cloudflare Pages/Workers project, all pointed at

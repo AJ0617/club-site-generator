@@ -102,6 +102,7 @@ a { color: var(--primary); }
     width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 12px;
     display: flex; align-items: center; justify-content: center;
     background: var(--primary); color: #fff; font-weight: 700; font-size: 1.4rem;
+    object-fit: cover;
 }
 .officer-name { display: block; font-weight: 700; }
 .officer-role { display: block; color: var(--muted); font-size: .95rem; }
