@@ -1,0 +1,283 @@
+/* ---------- Design tokens ----------
+   Self-contained on purpose — this file is never loaded alongside style.css,
+   so the base palette is duplicated here (same values) rather than shared,
+   keeping style.css/page.html (siteMode "single") provably untouched. */
+:root {
+    --bg:        #ffffff;
+    --surface:   #f5f7fa;
+    --text:      #1f2733;
+    --muted:     #5b6675;
+    --primary:   #2b6cb0;
+    --primary-d: #1e4e82;
+    --accent:    #ecc94b;
+    --border:    #e2e8f0;
+    --radius:    10px;
+    --radius-lg: 16px;
+    --shadow:    0 6px 20px rgba(20, 30, 50, .08);
+
+    --accent-text: #1f2733;
+    --hero-wash: linear-gradient(180deg, rgba(15,23,40,0) 0%, rgba(15,23,40,.85) 100%);
+    --hero-fallback-bg: linear-gradient(135deg, #1e3a5f, #2b6cb0);
+    --head-font: "Newsreader", Georgia, "Times New Roman", serif;
+    --sidebar-w: 72px; /* mobile-first default = icon rail */
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--text);
+    background: var(--bg);
+    overflow-x: hidden;
+}
+img { max-width: 100%; height: auto; display: block; }
+a { color: inherit; }
+
+/* ---------- App shell layout ----------
+   Phone-default: bottom tab bar (design 3a/3b). The >=768px media query
+   below re-chromes the same markup into the sidebar rail (design 4a/4b). */
+.app-shell { display: flex; align-items: stretch; min-height: 100vh; }
+
+.sidebar {
+    flex: 0 0 auto;
+    width: 100%;
+    background: rgba(250, 249, 247, .94);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    backdrop-filter: blur(12px) saturate(180%);
+    border-top: 1px solid var(--border);
+    box-sizing: border-box;
+    padding: 8px 6px calc(8px + env(safe-area-inset-bottom));
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: auto;
+    height: auto;
+    overflow-y: visible;
+    z-index: 20;
+}
+.sidebar-top { display: none; }
+.sidebar-toggle {
+    width: 36px; height: 36px; flex: 0 0 auto;
+    display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 3px;
+    background: transparent; border: 0; border-radius: 8px; cursor: pointer; padding: 0;
+}
+.sidebar-toggle:hover { background: var(--surface); }
+.sidebar-toggle span { display: block; width: 15px; height: 2px; border-radius: 1px; background: var(--muted); }
+.sidebar-brand {
+    display: none;
+    font-weight: 700; font-size: 1rem; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.sidebar-nav { display: flex; flex-direction: row; gap: 2px; }
+.sidebar-item {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+    flex: 1 1 0; min-width: 0;
+    padding: 6px 4px; border-radius: 10px; border: 0; background: transparent;
+    cursor: pointer; color: var(--muted); text-align: center; font: inherit;
+}
+.sidebar-item:hover { background: var(--surface); }
+.sidebar-item.is-active { background: var(--surface); color: var(--primary); }
+.sidebar-icon { flex: 0 0 auto; width: 20px; height: 20px; display: flex; }
+.sidebar-icon svg { width: 100%; height: 100%; }
+.sidebar-label { display: block; font-size: .66rem; font-weight: 600; white-space: nowrap; }
+
+.tab-content { flex: 1 1 auto; min-width: 0; box-sizing: border-box; padding: 24px 18px calc(86px + env(safe-area-inset-bottom)); }
+.tab-panel { display: none; }
+.tab-panel.is-active { display: block; }
+.app-footer { color: var(--muted); text-align: center; padding: 28px 0; font-size: .82rem; }
+
+/* ---------- Shared bits ---------- */
+.tab-heading {
+    font-family: var(--head-font); font-weight: 600; font-size: 1.15rem;
+    color: var(--text); margin: 0 0 14px; text-align: left;
+}
+.empty-note { color: var(--muted); font-size: .92rem; }
+.btn {
+    display: inline-block; min-height: 44px; line-height: 1.4; box-sizing: border-box;
+    padding: 12px 26px; border-radius: 999px; font-weight: 600;
+    text-decoration: none; cursor: pointer; border: 2px solid transparent;
+}
+.btn-primary { background: var(--accent); color: var(--accent-text); }
+.btn-primary:hover { background: #e2b93b; }
+.see-all { background: none; border: 0; padding: 0; font-size: .8rem; font-weight: 600; color: var(--primary); cursor: pointer; }
+
+/* ---------- Home: hero ----------
+   Phone-default bleeds edge-to-edge (negative margins cancel .tab-content's
+   own phone padding) with the club name floating near the top, since phone
+   has no persistent sidebar branding to carry it. >=768px restores the
+   rounded card + bottom-block eyebrow (design 4a/4b, already built). */
+.home-hero {
+    position: relative; overflow: hidden;
+    min-height: 300px; background: var(--hero-fallback-bg); background-size: cover; background-position: center;
+    color: #fff; display: flex; align-items: flex-end;
+    border-radius: 0; margin: -24px -18px 28px;
+}
+.home-hero-wash { position: absolute; inset: 0; background: var(--hero-wash); }
+.home-hero-brand {
+    position: absolute; top: 20px; left: 24px; right: 24px;
+    color: #fff; font-weight: 700; font-size: 1.02rem;
+    text-shadow: 0 1px 3px rgba(0,0,0,.5);
+}
+.home-hero-content { position: relative; padding: 26px 26px; }
+.home-hero-eyebrow { display: none; font-size: .85rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: rgba(255,255,255,.85); margin: 0 0 8px; }
+.home-hero-title { font-family: var(--head-font); font-weight: 600; font-size: 1.5rem; margin: 0 0 6px; line-height: 1.2; }
+.home-hero-meta { font-size: .92rem; color: rgba(255,255,255,.9); margin: 0 0 16px; }
+
+/* ---------- Home: about row ---------- */
+.about-row { display: flex; flex-direction: column; gap: 18px; margin-bottom: 28px; }
+.about-col { flex: 2; }
+.about-text { color: var(--muted); font-size: .95rem; line-height: 1.6; margin: 0; }
+.advisor-card {
+    flex: 1; background: var(--surface); border-radius: var(--radius-lg);
+    padding: 18px 20px; display: flex; gap: 12px; align-items: center; height: fit-content;
+}
+.advisor-icon { flex: 0 0 auto; width: 34px; height: 34px; border-radius: 9px; background: var(--primary); }
+.advisor-text { margin: 0; font-size: .88rem; color: var(--muted); }
+.advisor-text strong { color: var(--text); }
+
+/* ---------- Home: teaser row ---------- */
+.teaser-row { display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 28px; }
+.teaser-card { border-radius: var(--radius-lg); padding: 18px 20px; background: var(--surface); }
+.teaser-card.teaser-primary { background: var(--primary); color: #fff; display: flex; flex-direction: column; gap: 10px; }
+.teaser-eyebrow { font-size: .74rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; opacity: .8; }
+.teaser-card.teaser-primary .event-day-col { text-align: left; }
+.teaser-card.teaser-primary .event-day-num { color: #fff; }
+.teaser-card.teaser-primary .event-day-wd { color: rgba(255,255,255,.75); }
+.teaser-title { font-weight: 600; font-size: .96rem; margin: 2px 0 0; }
+.teaser-desc { font-size: .84rem; opacity: .85; margin: 2px 0 0; }
+.teaser-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+.teaser-card-title { font-family: var(--head-font); font-weight: 600; font-size: .96rem; color: var(--text); }
+
+.mini-avatar-row { display: flex; gap: 8px; }
+.mini-avatar-item { flex: 1; min-width: 0; text-align: center; }
+.mini-avatar {
+    width: 38px; height: 38px; border-radius: 50%; margin: 0 auto 6px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--primary); color: #fff; font-weight: 700; font-size: .72rem; object-fit: cover;
+}
+.mini-avatar-name { font-size: .68rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.award-preview-row { display: flex; align-items: center; gap: 12px; }
+.award-preview-row + .award-preview-row { margin-top: 8px; }
+.award-preview-title { font-size: .85rem; color: var(--text); }
+
+/* ---------- Home: gallery preview ---------- */
+.preview-section { margin-bottom: 28px; }
+.gallery-preview-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.gallery-preview-item { border-radius: 14px; overflow: hidden; aspect-ratio: 1 / 1; }
+.gallery-preview-item img { width: 100%; height: 100%; object-fit: cover; }
+
+/* ---------- Quick links ---------- */
+.quick-links-section { margin-bottom: 28px; }
+.quick-links-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.quick-link-card {
+    background: var(--surface); border-radius: var(--radius-lg); padding: 16px;
+    text-align: center; text-decoration: none; display: block;
+}
+.quick-link-icon { display: block; width: 24px; height: 24px; margin: 0 auto 8px; color: var(--primary); }
+.quick-link-label { display: block; font-size: .84rem; font-weight: 600; color: var(--text); }
+
+/* ---------- Events tab ---------- */
+.event-month-label {
+    font-size: .76rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+    color: var(--muted); margin: 20px 0 10px;
+}
+.event-month-group:first-child .event-month-label { margin-top: 0; }
+.event-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.event-card2 { display: flex; gap: 14px; align-items: center; background: var(--surface); border-radius: 14px; padding: 14px 16px; }
+.event-day-col { flex: 0 0 auto; width: 44px; text-align: center; }
+.event-day-num { display: block; font-weight: 700; font-size: 1.1rem; color: var(--primary); }
+.event-day-wd { display: block; font-size: .66rem; color: var(--muted); text-transform: uppercase; }
+.event-card2-title { margin: 0 0 4px; font-size: .94rem; font-weight: 600; color: var(--text); }
+.event-card2-desc { margin: 0; font-size: .83rem; color: var(--muted); }
+
+/* ---------- Members tab ---------- */
+.members-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 28px; }
+.member-card { background: var(--surface); border-radius: 14px; padding: 16px 10px; text-align: center; }
+.member-avatar {
+    width: 52px; height: 52px; border-radius: 50%; margin: 0 auto 10px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--primary); color: #fff; font-weight: 700; font-size: .95rem; object-fit: cover;
+}
+.member-name { font-weight: 600; font-size: .88rem; color: var(--text); }
+.member-role { font-size: .78rem; color: var(--muted); }
+
+/* Reused output from renderAwards()/renderGallery() — this page never loads
+   style.css, so their .section/.container/etc. classes need equivalents here. */
+.tab-panel .section { padding: 0; margin: 0 0 28px; background: none; }
+.tab-panel .container { max-width: none; width: 100%; margin: 0; padding: 0; }
+.tab-panel .section-title { font-family: var(--head-font); font-weight: 600; font-size: 1.05rem; text-align: left; margin: 0 0 14px; color: var(--text); }
+.tab-panel .section-lead { display: none; }
+
+.award-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; grid-template-columns: 1fr; }
+.award-card { display: flex; align-items: center; gap: 14px; background: var(--surface); border-radius: 14px; padding: 14px 16px; }
+.award-year { flex: 0 0 auto; font-weight: 800; font-size: .78rem; color: var(--accent-text); background: var(--accent); border-radius: 8px; padding: 6px 9px; }
+.award-title { margin: 0; font-size: .88rem; color: var(--text); }
+
+.gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 0; padding: 0; }
+.gallery-item { margin: 0; border-radius: 14px; overflow: hidden; }
+.gallery-item img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; }
+
+/* ---------- More tab ---------- */
+.more-card { background: var(--surface); border-radius: var(--radius-lg); padding: 40px 24px; margin-bottom: 28px; text-align: center; }
+.more-lead { color: var(--text); font-size: 1.3rem; margin: 0 0 20px; max-width: 640px; margin-left: auto; margin-right: auto; }
+.more-row { margin: 10px 0; font-size: 1.05rem; }
+.more-row strong { color: var(--text); }
+.more-row span { color: var(--muted); }
+.more-join-btn { margin-top: 20px; }
+
+/* ================= Tablet / laptop ================= */
+@media (min-width: 768px) {
+    :root { --sidebar-w: 248px; }
+
+    /* Re-chrome the bottom tab bar back into the sidebar rail (4a/4b). */
+    .sidebar {
+        width: var(--sidebar-w); background: var(--bg);
+        -webkit-backdrop-filter: none; backdrop-filter: none;
+        border-top: 0; border-right: 1px solid var(--border);
+        padding: 14px 8px; position: sticky; top: 0; left: auto; right: auto; bottom: auto;
+        align-self: flex-start; height: 100vh; overflow-y: auto;
+        transition: width .18s ease;
+    }
+    .sidebar-top { display: flex; }
+    .sidebar-nav { flex-direction: column; }
+    .sidebar-item { flex-direction: row; justify-content: flex-start; text-align: left; padding: 11px 12px; }
+    .sidebar-brand, .sidebar-label { display: block; }
+    .sidebar-label { font-size: .88rem; }
+    .tab-content { padding: 32px 40px 8px; }
+
+    .home-hero { margin: 0 0 28px; border-radius: var(--radius-lg); min-height: 380px; }
+    .home-hero-content { padding: 32px 36px; }
+    .home-hero-title { font-size: 2rem; }
+    .home-hero-eyebrow { display: block; }
+    .home-hero-brand { display: none; }
+
+    .about-row { flex-direction: row; gap: 28px; }
+    .teaser-row { grid-template-columns: repeat(3, 1fr); }
+    .quick-links-grid { grid-template-columns: repeat(3, 1fr); }
+    .gallery-preview-grid { grid-template-columns: repeat(4, 1fr); }
+    .event-grid { grid-template-columns: repeat(2, 1fr); }
+    .members-grid { grid-template-columns: repeat(3, 1fr); }
+    .award-list { grid-template-columns: repeat(2, 1fr); }
+    .gallery-grid { grid-template-columns: repeat(3, 1fr); }
+
+    /* Manual collapse reaches the same icon-rail state the sidebar-toggle
+       button (hidden below 768px) is only reachable at from here up. */
+    body.nav-collapsed .sidebar { width: 72px; }
+    body.nav-collapsed .sidebar-brand,
+    body.nav-collapsed .sidebar-label { display: none; }
+    body.nav-collapsed .sidebar-item { justify-content: center; }
+}
+
+@media (min-width: 992px) {
+    .tab-content { padding: 36px 56px 8px; }
+    .home-hero { min-height: 440px; }
+    .home-hero-title { font-size: 2.25rem; }
+    .members-grid { grid-template-columns: repeat(4, 1fr); }
+    .gallery-grid { grid-template-columns: repeat(4, 1fr); }
+}

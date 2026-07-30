@@ -62,6 +62,7 @@ function escapeHtml(value) {
 
 const MONTHS = ["January","February","March","April","May","June",
     "July","August","September","October","November","December"];
+const WEEKDAYS_ABBR = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
 function formatDate(iso) {
     const [y, m, d] = String(iso).split("-").map(Number);
@@ -69,8 +70,45 @@ function formatDate(iso) {
     return `${MONTHS[m - 1]} ${d}, ${y}`;
 }
 
+// Local (not UTC-parsed) date parts — same day-shift caution formatDate takes.
+function dateParts(iso) {
+    const [y, m, d] = String(iso).split("-").map(Number);
+    return { y, m, d };
+}
+
+function weekdayAbbrev(iso) {
+    const { y, m, d } = dateParts(iso);
+    if (!y || !m || !d) return "";
+    return WEEKDAYS_ABBR[new Date(y, m - 1, d).getDay()];
+}
+
+// Groups events into consecutive month buckets (assumes events are/will be
+// sorted ascending by date first). Label includes the year — a bare month
+// name would be ambiguous for a club whose events span a school year.
+function groupEventsByMonth(events) {
+    const sorted = [...events].sort((a, b) => a.date.localeCompare(b.date));
+    const groups = [];
+    let current = null;
+    for (const e of sorted) {
+        const { y, m } = dateParts(e.date);
+        const key = `${y}-${m}`;
+        if (!current || current.key !== key) {
+            current = { key, label: `${MONTHS[m - 1].toUpperCase()} ${y}`, events: [] };
+            groups.push(current);
+        }
+        current.events.push(e);
+    }
+    return groups;
+}
+
 function initials(name) {
     return String(name).trim().split(/\s+/).map(w => w[0] || "").join("").slice(0, 2).toUpperCase();
+}
+
+function renderAvatarHtml(name, photo, cssClass) {
+    return photo
+        ? `<img class="${cssClass}" src="images/${encodeURIComponent(photo)}" alt="" loading="lazy">`
+        : `<div class="${cssClass}" aria-hidden="true">${escapeHtml(initials(name))}</div>`;
 }
 
 // Shared {{token}} replacer — unknown tokens collapse to "" so a typo
@@ -109,9 +147,7 @@ function renderAbout(club) {
 function renderOfficers(officers) {
     if (!officers || officers.length === 0) return "";
     const itemsHtml = officers.map(o => {
-        const avatar = o.photo
-            ? `<img class="officer-avatar" src="images/${encodeURIComponent(o.photo)}" alt="" loading="lazy">`
-            : `<div class="officer-avatar" aria-hidden="true">${escapeHtml(initials(o.name))}</div>`;
+        const avatar = renderAvatarHtml(o.name, o.photo, "officer-avatar");
         return `
         <li class="officer-card">
           ${avatar}
@@ -256,6 +292,222 @@ function renderShell(data) {
     return fillTokens(template, data);
 }
 
+// ---------- App-shell renderers (siteMode "multipage" / "dynamic") ----------
+// Single-page design: all 5 tabs render into one index.html and are switched
+// client-side (see app-shell.html's inline <script>) — there are no sub-pages.
+
+function renderQuickLinks(links) {
+    if (!links || links.length === 0) return "";
+    const itemsHtml = links.map(l => `
+        <a class="quick-link-card" href="${escapeHtml(l.url)}" target="_blank" rel="noopener">
+          <svg class="quick-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="quick-link-label">${escapeHtml(l.label)}</span>
+        </a>`).join("");
+    return `
+    <div class="quick-links-section">
+      <h2 class="tab-heading">Quick Links</h2>
+      <div class="quick-links-grid">${itemsHtml}</div>
+    </div>`;
+}
+
+function renderHeroSection(club) {
+    const clubNameEsc = escapeHtml(club.clubName);
+    const tagline = escapeHtml(club.tagline || club.clubName);
+    const meeting = club.meetingTime
+        ? `<p class="home-hero-meta">${escapeHtml(club.meetingTime)}</p>`
+        : "";
+    // heroImage is a CSS background, not an <img> — a missing/not-yet-uploaded
+    // file just degrades to the gradient fallback instead of a broken-image icon.
+    const bgStyle = club.heroImage
+        ? ` style="background-image:url('images/${encodeURIComponent(club.heroImage)}')"`
+        : "";
+    return `
+    <section class="home-hero"${bgStyle}>
+      <div class="home-hero-wash"></div>
+      <div class="home-hero-brand">${clubNameEsc}</div>
+      <div class="home-hero-content">
+        <div class="home-hero-eyebrow">${clubNameEsc}</div>
+        <h1 class="home-hero-title">${tagline}</h1>
+        ${meeting}
+        <a class="btn btn-primary" href="#more" data-tab-target="more">Join Us</a>
+      </div>
+    </section>`;
+}
+
+function renderAboutRow(club) {
+    if (!club.description && !club.advisorName) return "";
+    const about = club.description
+        ? `<h2 class="tab-heading">About</h2><p class="about-text">${escapeHtml(club.description)}</p>`
+        : "";
+    const advisor = club.advisorName
+        ? `
+        <div class="advisor-card">
+          <div class="advisor-icon" aria-hidden="true"></div>
+          <p class="advisor-text"><strong>Advisor:</strong> ${escapeHtml(club.advisorName)}</p>
+        </div>`
+        : "";
+    return `
+    <div class="about-row">
+      <div class="about-col">${about}</div>
+      ${advisor}
+    </div>`;
+}
+
+function pickNextUpEvent(events, now) {
+    if (!events || events.length === 0) return null;
+    const sorted = [...events].sort((a, b) => a.date.localeCompare(b.date));
+    const today = now.toISOString().slice(0, 10);
+    // Prefer the next upcoming event; fall back to the most recent past one
+    // so the teaser is never simply missing.
+    return sorted.find(e => e.date >= today) || sorted[sorted.length - 1];
+}
+
+function renderNextUpTeaser(events, now = new Date()) {
+    const e = pickNextUpEvent(events, now);
+    if (!e) return "";
+    const { d } = dateParts(e.date);
+    return `
+    <div class="teaser-card teaser-primary">
+      <div class="teaser-eyebrow">Next Up</div>
+      <div class="event-day-col">
+        <span class="event-day-num">${d}</span>
+        <span class="event-day-wd">${weekdayAbbrev(e.date)}</span>
+      </div>
+      <div class="teaser-title">${escapeHtml(e.title)}</div>
+      ${e.description ? `<p class="teaser-desc">${escapeHtml(e.description)}</p>` : ""}
+    </div>`;
+}
+
+function renderMembersPreview(officers) {
+    if (!officers || officers.length === 0) return "";
+    const preview = officers.slice(0, 3).map(o => `
+        <div class="mini-avatar-item">
+          ${renderAvatarHtml(o.name, o.photo, "mini-avatar")}
+          <div class="mini-avatar-name">${escapeHtml(o.name)}</div>
+        </div>`).join("");
+    return `
+    <div class="teaser-card">
+      <div class="teaser-head"><span class="teaser-card-title">Members</span><button type="button" class="see-all" data-tab-target="members">See all &rarr;</button></div>
+      <div class="mini-avatar-row">${preview}</div>
+    </div>`;
+}
+
+function renderAwardsPreview(awards) {
+    if (!awards || awards.length === 0) return "";
+    const top = [...awards].sort((a, b) => b.year - a.year).slice(0, 2);
+    const rows = top.map(a => `
+      <div class="award-preview-row">
+        <span class="award-year">${escapeHtml(a.year)}</span>
+        <span class="award-preview-title">${escapeHtml(a.title)}</span>
+      </div>`).join("");
+    return `
+    <div class="teaser-card">
+      <div class="teaser-head"><span class="teaser-card-title">Awards</span><button type="button" class="see-all" data-tab-target="members">See all &rarr;</button></div>
+      ${rows}
+    </div>`;
+}
+
+function renderGalleryPreview(images, clubName) {
+    if (!images || images.length === 0) return "";
+    const itemsHtml = images.slice(0, 4).map(file => `
+        <div class="gallery-preview-item">
+          <img src="images/${encodeURIComponent(file)}" alt="${escapeHtml(clubName)} photo" loading="lazy">
+        </div>`).join("");
+    return `
+    <div class="preview-section">
+      <div class="teaser-head"><h2 class="tab-heading" style="margin:0">Gallery</h2><button type="button" class="see-all" data-tab-target="gallery">See all &rarr;</button></div>
+      <div class="gallery-preview-grid">${itemsHtml}</div>
+    </div>`;
+}
+
+function renderHomeTabContent(club, variant) {
+    const parts = [renderHeroSection(club), renderAboutRow(club)];
+    if (variant === "teasers") {
+        const teasers = [renderNextUpTeaser(club.events), renderMembersPreview(club.officers), renderAwardsPreview(club.awards)]
+            .filter(Boolean);
+        if (teasers.length > 0) parts.push(`<div class="teaser-row">${teasers.join("")}</div>`);
+        parts.push(renderGalleryPreview(club.images, club.clubName));
+    }
+    parts.push(renderQuickLinks(club.links));
+    return parts.filter(Boolean).join("\n");
+}
+
+function renderEventsTabContent(events) {
+    if (!events || events.length === 0) {
+        return `<h2 class="tab-heading">Events</h2><p class="empty-note">No events scheduled yet — check back soon.</p>`;
+    }
+    const groups = groupEventsByMonth(events).map(grp => {
+        const cards = grp.events.map(e => {
+            const { d } = dateParts(e.date);
+            return `
+        <div class="event-card2">
+          <div class="event-day-col">
+            <span class="event-day-num">${d}</span>
+            <span class="event-day-wd">${weekdayAbbrev(e.date)}</span>
+          </div>
+          <div class="event-info">
+            <h3 class="event-card2-title">${escapeHtml(e.title)}</h3>
+            ${e.description ? `<p class="event-card2-desc">${escapeHtml(e.description)}</p>` : ""}
+          </div>
+        </div>`;
+        }).join("");
+        return `
+      <div class="event-month-group">
+        <div class="event-month-label">${escapeHtml(grp.label)}</div>
+        <div class="event-grid">${cards}</div>
+      </div>`;
+    }).join("");
+    return `<h2 class="tab-heading">Events</h2>${groups}`;
+}
+
+function renderMembersTabContent(club) {
+    const officers = club.officers || [];
+    const grid = officers.length === 0 ? "" : `
+    <div class="members-grid">
+      ${officers.map(o => `
+        <div class="member-card">
+          ${renderAvatarHtml(o.name, o.photo, "member-avatar")}
+          <div class="member-name">${escapeHtml(o.name)}</div>
+          <div class="member-role">${escapeHtml(o.role)}</div>
+        </div>`).join("")}
+    </div>`;
+    return `<h2 class="tab-heading">Members</h2>${grid}${renderAwards(club.awards)}`;
+}
+
+function renderMoreTabContent(club) {
+    const rows = [];
+    if (club.advisorName) rows.push(`<p class="more-row"><strong>Advisor:</strong> <span>${escapeHtml(club.advisorName)}</span></p>`);
+    if (club.meetingTime) rows.push(`<p class="more-row"><strong>Meets:</strong> <span>${escapeHtml(club.meetingTime)}</span></p>`);
+    return `
+    <h2 class="tab-heading">More</h2>
+    <div class="more-card">
+      <p class="more-lead">Interested in joining ${escapeHtml(club.clubName)}? Come to a meeting or reach out below.</p>
+      ${rows.join("\n      ")}
+      <span class="btn btn-primary more-join-btn">Join Us</span>
+    </div>
+    ${renderQuickLinks(club.links)}`;
+}
+
+function renderAppShellPage(club, variant) {
+    const template = fs.readFileSync(path.join(TEMPLATE_DIR, "app-shell.html"), "utf8");
+    const clubNameEsc = escapeHtml(club.clubName);
+    return fillTokens(template, {
+        pageTitle: clubNameEsc,
+        clubName: clubNameEsc,
+        metaDescription: escapeHtml((club.description || club.clubName).slice(0, 155)),
+        homeTabContent: renderHomeTabContent(club, variant),
+        eventsTabContent: renderEventsTabContent(club.events),
+        membersTabContent: renderMembersTabContent(club),
+        galleryTabContent: renderGallery(club.images, club.clubName) ||
+            `<h2 class="tab-heading">Gallery</h2><p class="empty-note">No photos yet — check back soon.</p>`,
+        moreTabContent: renderMoreTabContent(club),
+        year: String(new Date().getFullYear()),
+    });
+}
+
 // ---------- Images: copy, resize+compress anything > 1600px ----------
 async function copyAndOptimizeImages(clubDir) {
     const srcDir = path.join(clubDir, "images");
@@ -322,11 +574,7 @@ async function buildClub(slug, validate) {
         return false;
     }
 
-    const splits = decideSplits(club);
-    const navModel = buildNavModel(club, splits);
-    const sectionHtml = buildSectionHtml(club);
-    const clubNameEsc = escapeHtml(club.clubName);
-    const year = String(new Date().getFullYear());
+    const mode = club.siteMode || "dynamic";
 
     // Wipe dist/ before writing — otherwise stale sub-pages from a
     // previous build (e.g. a prior siteMode/threshold that split a
@@ -335,38 +583,57 @@ async function buildClub(slug, validate) {
     fs.rmSync(DIST_DIR, { recursive: true, force: true });
     fs.mkdirSync(DIST_DIR, { recursive: true });
 
-    // index.html — always generated
-    const indexHtml = renderShell({
-        pageTitle: clubNameEsc,
-        clubName: clubNameEsc,
-        metaDescription: escapeHtml((club.description || club.clubName).slice(0, 155)),
-        navLinks: renderNavLinks(navModel, "index"),
-        heroTagline: club.meetingTime ? escapeHtml(club.meetingTime) : "A school club for students who love the game.",
-        heroCtaHref: "#contact",
-        mainContent: composeIndexMain(club, splits, sectionHtml),
-        year,
-    });
-    fs.writeFileSync(path.join(DIST_DIR, "index.html"), indexHtml, "utf8");
+    let generatedFiles;
 
-    // Sub-pages — only for sections that actually split
-    const generatedFiles = ["index.html"];
-    for (const s of SPLITTABLE_SECTIONS) {
-        if (!splits[s.key]) continue;
-        const subHtml = renderShell({
-            pageTitle: `${s.label} — ${clubNameEsc}`,
+    if (mode === "single") {
+        // ---- Classic top-nav, one-long-scrolling-page design. Untouched. ----
+        const splits = decideSplits(club);
+        const navModel = buildNavModel(club, splits);
+        const sectionHtml = buildSectionHtml(club);
+        const clubNameEsc = escapeHtml(club.clubName);
+        const year = String(new Date().getFullYear());
+
+        // index.html — always generated
+        const indexHtml = renderShell({
+            pageTitle: clubNameEsc,
             clubName: clubNameEsc,
-            metaDescription: escapeHtml(`${s.label} for ${club.clubName}`),
-            navLinks: renderNavLinks(navModel, s.key),
-            heroTagline: s.label,
-            heroCtaHref: "index.html#contact", // Contact only lives on index.html
-            mainContent: sectionHtml[s.key],
+            metaDescription: escapeHtml((club.description || club.clubName).slice(0, 155)),
+            navLinks: renderNavLinks(navModel, "index"),
+            heroTagline: club.meetingTime ? escapeHtml(club.meetingTime) : "A school club for students who love the game.",
+            heroCtaHref: "#contact",
+            mainContent: composeIndexMain(club, splits, sectionHtml),
             year,
         });
-        fs.writeFileSync(path.join(DIST_DIR, s.file), subHtml, "utf8");
-        generatedFiles.push(s.file);
+        fs.writeFileSync(path.join(DIST_DIR, "index.html"), indexHtml, "utf8");
+
+        // Sub-pages — only for sections that actually split
+        generatedFiles = ["index.html"];
+        for (const s of SPLITTABLE_SECTIONS) {
+            if (!splits[s.key]) continue;
+            const subHtml = renderShell({
+                pageTitle: `${s.label} — ${clubNameEsc}`,
+                clubName: clubNameEsc,
+                metaDescription: escapeHtml(`${s.label} for ${club.clubName}`),
+                navLinks: renderNavLinks(navModel, s.key),
+                heroTagline: s.label,
+                heroCtaHref: "index.html#contact", // Contact only lives on index.html
+                mainContent: sectionHtml[s.key],
+                year,
+            });
+            fs.writeFileSync(path.join(DIST_DIR, s.file), subHtml, "utf8");
+            generatedFiles.push(s.file);
+        }
+
+        fs.copyFileSync(path.join(TEMPLATE_DIR, "style.css"), path.join(DIST_DIR, "style.css"));
+    } else {
+        // ---- App-shell design: sidebar + client-side tabs, one page only.
+        // "multipage" = no Home teasers, "dynamic" = Home teasers. ----
+        const variant = mode === "multipage" ? "no-teasers" : "teasers";
+        fs.writeFileSync(path.join(DIST_DIR, "index.html"), renderAppShellPage(club, variant), "utf8");
+        fs.copyFileSync(path.join(TEMPLATE_DIR, "app-shell.css"), path.join(DIST_DIR, "app-shell.css"));
+        generatedFiles = ["index.html"];
     }
 
-    fs.copyFileSync(path.join(TEMPLATE_DIR, "style.css"), path.join(DIST_DIR, "style.css"));
     await copyAndOptimizeImages(clubDir);
 
     // Records which club this build actually produced, so scripts/deploy.js

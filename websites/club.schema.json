@@ -11,6 +11,20 @@
     "description": { "type": "string" },
     "meetingTime": { "type": "string" },
     "siteMode":    { "type": "string", "enum": ["dynamic", "single", "multipage"] },
+    "tagline":     { "type": "string" },
+    "heroImage":   { "type": "string", "minLength": 1 },
+    "links": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["label", "url"],
+        "properties": {
+          "label": { "type": "string", "minLength": 1 },
+          "url":   { "type": "string", "minLength": 1 }
+        }
+      }
+    },
     "officers": {
       "type": "array",
       "items": {
