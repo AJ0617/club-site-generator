@@ -1,0 +1,497 @@
+media:
+  - name: example-club-images
+    label: "Example Club — Images"
+    input: websites/clubs/example-club/images
+    output: images
+    extensions: [jpg, jpeg, png, webp, gif, svg]
+    categories: [image]
+  - name: demo-multi-images
+    label: "Demo Multi Club — Images"
+    input: websites/clubs/demo-multi/images
+    output: images
+    extensions: [jpg, jpeg, png, webp, gif, svg]
+    categories: [image]
+  - name: demo-single-images
+    label: "Demo Single Club — Images"
+    input: websites/clubs/demo-single/images
+    output: images
+    extensions: [jpg, jpeg, png, webp, gif, svg]
+    categories: [image]
+
+content:
+  - name: example-club
+    label: "Example Club"
+    type: file
+    path: websites/clubs/example-club/club.json
+    format: json
+    fields:
+      - name: clubName
+        label: "Club Name"
+        type: string
+        required: true
+      - name: advisorName
+        label: "Advisor Name"
+        type: string
+      - name: description
+        label: "Description"
+        type: text
+      - name: meetingTime
+        label: "Meeting Time"
+        type: string
+      - name: siteMode
+        label: "Site Mode"
+        type: select
+        options:
+          values:
+            - label: "Dynamic (Home page shows teasers)"
+              value: dynamic
+            - label: "Multipage (no Home page teasers)"
+              value: multipage
+            - label: "Single — classic long-scroll page — do not use unless you know why"
+              value: single
+      - name: tagline
+        label: "Tagline"
+        type: string
+      - name: heroImage
+        label: "Hero Image"
+        type: image
+        options:
+          media: example-club-images
+      - name: moreText
+        label: "More Tab Lead Text"
+        type: text
+      - name: theme
+        label: "Theme"
+        type: object
+        fields:
+          - name: primaryColor
+            label: "Primary Color (hex, e.g. #2b6cb0)"
+            type: string
+          - name: accentColor
+            label: "Accent Color (hex, e.g. #ecc94b)"
+            type: string
+          - name: accentTextColor
+            label: "Accent Text Color (hex, e.g. #1f2733)"
+            type: string
+          - name: backgroundColor
+            label: "Background Color (hex, e.g. #ffffff)"
+            type: string
+          - name: surfaceColor
+            label: "Surface Color (hex, e.g. #f5f7fa)"
+            type: string
+          - name: textColor
+            label: "Text Color (hex, e.g. #1f2733)"
+            type: string
+          - name: mutedTextColor
+            label: "Muted Text Color (hex, e.g. #5b6675)"
+            type: string
+          - name: borderColor
+            label: "Border Color (hex, e.g. #e2e8f0)"
+            type: string
+          - name: headingFont
+            label: "Heading Font (Google Fonts name, e.g. Newsreader)"
+            type: string
+          - name: bodyFont
+            label: "Body Font (Google Fonts name, e.g. Inter)"
+            type: string
+      - name: links
+        label: "Quick Links"
+        type: object
+        list: true
+        summary: "{label}"
+        fields:
+          - name: label
+            label: "Label"
+            type: string
+            required: true
+          - name: url
+            label: "URL"
+            type: string
+            required: true
+          - name: icon
+            label: "Icon"
+            type: image
+            options:
+              media: example-club-images
+      - name: officers
+        label: "Officers"
+        type: object
+        list: true
+        summary: "{name} — {role}"
+        fields:
+          - name: name
+            label: "Name"
+            type: string
+            required: true
+          - name: role
+            label: "Role"
+            type: string
+            required: true
+          - name: photo
+            label: "Photo"
+            type: image
+            options:
+              media: example-club-images
+      - name: events
+        label: "Events"
+        type: object
+        list: true
+        summary: "{title} ({date})"
+        fields:
+          - name: title
+            label: "Title"
+            type: string
+            required: true
+          - name: date
+            label: "Date"
+            type: date
+            required: true
+          - name: description
+            label: "Description"
+            type: text
+      - name: awards
+        label: "Awards"
+        type: object
+        list: true
+        summary: "{title} ({year})"
+        fields:
+          - name: title
+            label: "Title"
+            type: string
+            required: true
+          - name: year
+            label: "Year"
+            type: number
+            required: true
+          - name: description
+            label: "Description"
+            type: text
+          - name: featured
+            label: "Pin to Home page Awards teaser"
+            type: boolean
+      - name: images
+        label: "Gallery Images"
+        type: image
+        list: true
+        options:
+          media: example-club-images
+          multiple:
+            max: 60
+
+  - name: demo-multi
+    label: "Demo Multi Club"
+    type: file
+    path: websites/clubs/demo-multi/club.json
+    format: json
+    fields:
+      - name: clubName
+        label: "Club Name"
+        type: string
+        required: true
+      - name: advisorName
+        label: "Advisor Name"
+        type: string
+      - name: description
+        label: "Description"
+        type: text
+      - name: meetingTime
+        label: "Meeting Time"
+        type: string
+      - name: siteMode
+        label: "Site Mode"
+        type: select
+        options:
+          values:
+            - label: "Dynamic (Home page shows teasers)"
+              value: dynamic
+            - label: "Multipage (no Home page teasers)"
+              value: multipage
+            - label: "Single — classic long-scroll page — do not use unless you know why"
+              value: single
+      - name: tagline
+        label: "Tagline"
+        type: string
+      - name: heroImage
+        label: "Hero Image"
+        type: image
+        options:
+          media: demo-multi-images
+      - name: moreText
+        label: "More Tab Lead Text"
+        type: text
+      - name: theme
+        label: "Theme"
+        type: object
+        fields:
+          - name: primaryColor
+            label: "Primary Color (hex, e.g. #2b6cb0)"
+            type: string
+          - name: accentColor
+            label: "Accent Color (hex, e.g. #ecc94b)"
+            type: string
+          - name: accentTextColor
+            label: "Accent Text Color (hex, e.g. #1f2733)"
+            type: string
+          - name: backgroundColor
+            label: "Background Color (hex, e.g. #ffffff)"
+            type: string
+          - name: surfaceColor
+            label: "Surface Color (hex, e.g. #f5f7fa)"
+            type: string
+          - name: textColor
+            label: "Text Color (hex, e.g. #1f2733)"
+            type: string
+          - name: mutedTextColor
+            label: "Muted Text Color (hex, e.g. #5b6675)"
+            type: string
+          - name: borderColor
+            label: "Border Color (hex, e.g. #e2e8f0)"
+            type: string
+          - name: headingFont
+            label: "Heading Font (Google Fonts name, e.g. Newsreader)"
+            type: string
+          - name: bodyFont
+            label: "Body Font (Google Fonts name, e.g. Inter)"
+            type: string
+      - name: links
+        label: "Quick Links"
+        type: object
+        list: true
+        summary: "{label}"
+        fields:
+          - name: label
+            label: "Label"
+            type: string
+            required: true
+          - name: url
+            label: "URL"
+            type: string
+            required: true
+          - name: icon
+            label: "Icon"
+            type: image
+            options:
+              media: demo-multi-images
+      - name: officers
+        label: "Officers"
+        type: object
+        list: true
+        summary: "{name} — {role}"
+        fields:
+          - name: name
+            label: "Name"
+            type: string
+            required: true
+          - name: role
+            label: "Role"
+            type: string
+            required: true
+          - name: photo
+            label: "Photo"
+            type: image
+            options:
+              media: demo-multi-images
+      - name: events
+        label: "Events"
+        type: object
+        list: true
+        summary: "{title} ({date})"
+        fields:
+          - name: title
+            label: "Title"
+            type: string
+            required: true
+          - name: date
+            label: "Date"
+            type: date
+            required: true
+          - name: description
+            label: "Description"
+            type: text
+      - name: awards
+        label: "Awards"
+        type: object
+        list: true
+        summary: "{title} ({year})"
+        fields:
+          - name: title
+            label: "Title"
+            type: string
+            required: true
+          - name: year
+            label: "Year"
+            type: number
+            required: true
+          - name: description
+            label: "Description"
+            type: text
+          - name: featured
+            label: "Pin to Home page Awards teaser"
+            type: boolean
+      - name: images
+        label: "Gallery Images"
+        type: image
+        list: true
+        options:
+          media: demo-multi-images
+          multiple:
+            max: 60
+
+  - name: demo-single
+    label: "Demo Single Club"
+    type: file
+    path: websites/clubs/demo-single/club.json
+    format: json
+    fields:
+      - name: clubName
+        label: "Club Name"
+        type: string
+        required: true
+      - name: advisorName
+        label: "Advisor Name"
+        type: string
+      - name: description
+        label: "Description"
+        type: text
+      - name: meetingTime
+        label: "Meeting Time"
+        type: string
+      - name: siteMode
+        label: "Site Mode"
+        type: select
+        options:
+          values:
+            - label: "Dynamic (Home page shows teasers)"
+              value: dynamic
+            - label: "Multipage (no Home page teasers)"
+              value: multipage
+            - label: "Single — classic long-scroll page — do not use unless you know why"
+              value: single
+      - name: tagline
+        label: "Tagline"
+        type: string
+      - name: heroImage
+        label: "Hero Image"
+        type: image
+        options:
+          media: demo-single-images
+      - name: moreText
+        label: "More Tab Lead Text"
+        type: text
+      - name: theme
+        label: "Theme"
+        type: object
+        fields:
+          - name: primaryColor
+            label: "Primary Color (hex, e.g. #2b6cb0)"
+            type: string
+          - name: accentColor
+            label: "Accent Color (hex, e.g. #ecc94b)"
+            type: string
+          - name: accentTextColor
+            label: "Accent Text Color (hex, e.g. #1f2733)"
+            type: string
+          - name: backgroundColor
+            label: "Background Color (hex, e.g. #ffffff)"
+            type: string
+          - name: surfaceColor
+            label: "Surface Color (hex, e.g. #f5f7fa)"
+            type: string
+          - name: textColor
+            label: "Text Color (hex, e.g. #1f2733)"
+            type: string
+          - name: mutedTextColor
+            label: "Muted Text Color (hex, e.g. #5b6675)"
+            type: string
+          - name: borderColor
+            label: "Border Color (hex, e.g. #e2e8f0)"
+            type: string
+          - name: headingFont
+            label: "Heading Font (Google Fonts name, e.g. Newsreader)"
+            type: string
+          - name: bodyFont
+            label: "Body Font (Google Fonts name, e.g. Inter)"
+            type: string
+      - name: links
+        label: "Quick Links"
+        type: object
+        list: true
+        summary: "{label}"
+        fields:
+          - name: label
+            label: "Label"
+            type: string
+            required: true
+          - name: url
+            label: "URL"
+            type: string
+            required: true
+          - name: icon
+            label: "Icon"
+            type: image
+            options:
+              media: demo-single-images
+      - name: officers
+        label: "Officers"
+        type: object
+        list: true
+        summary: "{name} — {role}"
+        fields:
+          - name: name
+            label: "Name"
+            type: string
+            required: true
+          - name: role
+            label: "Role"
+            type: string
+            required: true
+          - name: photo
+            label: "Photo"
+            type: image
+            options:
+              media: demo-single-images
+      - name: events
+        label: "Events"
+        type: object
+        list: true
+        summary: "{title} ({date})"
+        fields:
+          - name: title
+            label: "Title"
+            type: string
+            required: true
+          - name: date
+            label: "Date"
+            type: date
+            required: true
+          - name: description
+            label: "Description"
+            type: text
+      - name: awards
+        label: "Awards"
+        type: object
+        list: true
+        summary: "{title} ({year})"
+        fields:
+          - name: title
+            label: "Title"
+            type: string
+            required: true
+          - name: year
+            label: "Year"
+            type: number
+            required: true
+          - name: description
+            label: "Description"
+            type: text
+          - name: featured
+            label: "Pin to Home page Awards teaser"
+            type: boolean
+      - name: images
+        label: "Gallery Images"
+        type: image
+        list: true
+        options:
+          media: demo-single-images
+          multiple:
+            max: 60

@@ -107,8 +107,17 @@ function initials(name) {
 
 function renderAvatarHtml(name, photo, cssClass) {
     return photo
-        ? `<img class="${cssClass}" src="images/${encodeURIComponent(photo)}" alt="" loading="lazy">`
+        ? `<img class="${cssClass}" src="${resolveImageSrc(photo)}" alt="" loading="lazy">`
         : `<div class="${cssClass}" aria-hidden="true">${escapeHtml(initials(name))}</div>`;
+}
+
+// Reconciles legacy bare-filename values already in club.json ("ava.jpg")
+// with path-prefixed values Pages CMS writes ("images/ava.jpg") — every
+// club's Pages CMS media source is configured with output: images, so new
+// uploads always land on the "already contains /" branch.
+function resolveImageSrc(value) {
+    const withPrefix = String(value).includes("/") ? value : `images/${value}`;
+    return withPrefix.split("/").map(encodeURIComponent).join("/");
 }
 
 // Shared {{token}} replacer — unknown tokens collapse to "" so a typo
@@ -174,7 +183,10 @@ function renderAwards(awards) {
     const itemsHtml = awards.map(a => `
         <li class="award-card">
           <span class="award-year">${escapeHtml(a.year)}</span>
-          <p class="award-title">${escapeHtml(a.title)}</p>
+          <div class="award-text">
+            <p class="award-title">${escapeHtml(a.title)}</p>
+            ${a.description ? `<p class="award-desc">${escapeHtml(a.description)}</p>` : ""}
+          </div>
         </li>`).join("");
     return fillTokens(loadPartial("awards"), { itemsHtml });
 }
@@ -183,7 +195,7 @@ function renderGallery(images, clubName) {
     if (!images || images.length === 0) return "";
     const itemsHtml = images.map(file => `
         <figure class="gallery-item">
-          <img src="images/${encodeURIComponent(file)}" alt="${escapeHtml(clubName)} photo" loading="lazy">
+          <img src="${resolveImageSrc(file)}" alt="${escapeHtml(clubName)} photo" loading="lazy">
         </figure>`).join("");
     return fillTokens(loadPartial("gallery"), { itemsHtml });
 }
@@ -298,14 +310,19 @@ function renderShell(data) {
 
 function renderQuickLinks(links) {
     if (!links || links.length === 0) return "";
-    const itemsHtml = links.map(l => `
-        <a class="quick-link-card" href="${escapeHtml(l.url)}" target="_blank" rel="noopener">
-          <svg class="quick-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+    const itemsHtml = links.map(l => {
+        const icon = l.icon
+            ? `<img class="quick-link-icon" src="${resolveImageSrc(l.icon)}" alt="" loading="lazy">`
+            : `<svg class="quick-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
             <path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+          </svg>`;
+        return `
+        <a class="quick-link-card" href="${escapeHtml(l.url)}" target="_blank" rel="noopener">
+          ${icon}
           <span class="quick-link-label">${escapeHtml(l.label)}</span>
-        </a>`).join("");
+        </a>`;
+    }).join("");
     return `
     <div class="quick-links-section">
       <h2 class="tab-heading">Quick Links</h2>
@@ -322,7 +339,7 @@ function renderHeroSection(club) {
     // heroImage is a CSS background, not an <img> — a missing/not-yet-uploaded
     // file just degrades to the gradient fallback instead of a broken-image icon.
     const bgStyle = club.heroImage
-        ? ` style="background-image:url('images/${encodeURIComponent(club.heroImage)}')"`
+        ? ` style="background-image:url('${resolveImageSrc(club.heroImage)}')"`
         : "";
     return `
     <section class="home-hero"${bgStyle}>
@@ -397,7 +414,10 @@ function renderMembersPreview(officers) {
 
 function renderAwardsPreview(awards) {
     if (!awards || awards.length === 0) return "";
-    const top = [...awards].sort((a, b) => b.year - a.year).slice(0, 2);
+    const pinned = awards.filter(a => a.featured === true);
+    const top = pinned.length > 0
+        ? [...pinned].sort((a, b) => b.year - a.year)
+        : [...awards].sort((a, b) => b.year - a.year).slice(0, 2);
     const rows = top.map(a => `
       <div class="award-preview-row">
         <span class="award-year">${escapeHtml(a.year)}</span>
@@ -414,7 +434,7 @@ function renderGalleryPreview(images, clubName) {
     if (!images || images.length === 0) return "";
     const itemsHtml = images.slice(0, 4).map(file => `
         <div class="gallery-preview-item">
-          <img src="images/${encodeURIComponent(file)}" alt="${escapeHtml(clubName)} photo" loading="lazy">
+          <img src="${resolveImageSrc(file)}" alt="${escapeHtml(clubName)} photo" loading="lazy">
         </div>`).join("");
     return `
     <div class="preview-section">
@@ -481,14 +501,59 @@ function renderMoreTabContent(club) {
     const rows = [];
     if (club.advisorName) rows.push(`<p class="more-row"><strong>Advisor:</strong> <span>${escapeHtml(club.advisorName)}</span></p>`);
     if (club.meetingTime) rows.push(`<p class="more-row"><strong>Meets:</strong> <span>${escapeHtml(club.meetingTime)}</span></p>`);
+    const lead = club.moreText || `Interested in joining ${club.clubName}? Come to a meeting or reach out below.`;
     return `
     <h2 class="tab-heading">More</h2>
     <div class="more-card">
-      <p class="more-lead">Interested in joining ${escapeHtml(club.clubName)}? Come to a meeting or reach out below.</p>
+      <p class="more-lead">${escapeHtml(lead)}</p>
       ${rows.join("\n      ")}
       <span class="btn btn-primary more-join-btn">Join Us</span>
     </div>
     ${renderQuickLinks(club.links)}`;
+}
+
+// ---------- Theme → CSS pipeline (app-shell path only) ----------
+const THEME_CSS_VAR_MAP = {
+    primaryColor:    "--primary",
+    accentColor:     "--accent",
+    accentTextColor: "--accent-text",
+    backgroundColor: "--bg",
+    surfaceColor:    "--surface",
+    textColor:       "--text",
+    mutedTextColor:  "--muted",
+    borderColor:     "--border",
+};
+
+// Hex colors are already guaranteed valid by the schema's pattern check
+// (enforced in buildClub()'s validate(club) call before rendering runs),
+// but font names are free text — strip anything that could break out of
+// a <style> block or a Google Fonts URL.
+function sanitizeFontName(value) {
+    return String(value).replace(/[^A-Za-z0-9 \-]/g, "");
+}
+
+function renderThemeOverrideStyle(theme) {
+    if (!theme) return "";
+    const declarations = [];
+    for (const [field, cssVar] of Object.entries(THEME_CSS_VAR_MAP)) {
+        if (theme[field]) declarations.push(`${cssVar}: ${theme[field]};`);
+    }
+    if (theme.headingFont) {
+        declarations.push(`--head-font: "${sanitizeFontName(theme.headingFont)}", Georgia, "Times New Roman", serif;`);
+    }
+    if (theme.bodyFont) {
+        declarations.push(`--body-font: "${sanitizeFontName(theme.bodyFont)}", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;`);
+    }
+    if (declarations.length === 0) return "";
+    return `<style>:root{${declarations.join(" ")}}</style>`;
+}
+
+function buildFontLinkHref(theme) {
+    const heading = sanitizeFontName(theme && theme.headingFont ? theme.headingFont : "Newsreader").trim().replace(/ /g, "+");
+    const body = theme && theme.bodyFont ? sanitizeFontName(theme.bodyFont).trim().replace(/ /g, "+") : "";
+    const families = [`family=${heading}:wght@400;500;600;700`];
+    if (body && body !== heading) families.push(`family=${body}:wght@400;500;600;700`);
+    return `https://fonts.googleapis.com/css2?${families.join("&")}&display=swap`;
 }
 
 function renderAppShellPage(club, variant) {
@@ -505,6 +570,8 @@ function renderAppShellPage(club, variant) {
             `<h2 class="tab-heading">Gallery</h2><p class="empty-note">No photos yet — check back soon.</p>`,
         moreTabContent: renderMoreTabContent(club),
         year: String(new Date().getFullYear()),
+        fontLinkHref: buildFontLinkHref(club.theme),
+        themeOverrideStyle: renderThemeOverrideStyle(club.theme),
     });
 }
 

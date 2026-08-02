@@ -33,6 +33,43 @@ initials. You can replace that with a real photo:
    1600px wide are automatically resized and compressed, same as gallery
    images.
 
+## Editing club content with Pages CMS
+
+[Pages CMS](https://pagescms.org) is a free, Git-based headless CMS: it
+reads the `.pages.yml` config file at this repo's root and turns it into a
+web form that edits each club's `club.json` (and uploads images) by
+committing directly to this repo — no local setup, no editing raw JSON.
+It's meant for club officers who want to update content themselves without
+touching code.
+
+**One-time setup:** go to [app.pagescms.org](https://app.pagescms.org) and
+sign in with GitHub, then install the Pages CMS GitHub App on this
+repository when prompted. After that, anyone you share the Pages CMS
+project link with (and who has been granted access on the GitHub side) can
+log in and edit.
+
+Pages CMS shows one entry per club (Example Club, Demo Multi Club, Demo
+Single Club), so editing *feels* per-club — but it's the same shared repo
+under the hood. **There's no repo-level access isolation between clubs**:
+anyone with edit access to this Pages CMS project can edit any club's
+content, not just their own.
+
+**Adding a fourth (or later) club:** `.pages.yml` does not update itself.
+For each new club you add under `websites/clubs/<slug>/`, you must also
+hand-edit `.pages.yml` to add:
+1. A new `media:` entry pointing at `websites/clubs/<slug>/images`.
+2. A new `content:` entry pointing at `websites/clubs/<slug>/club.json`,
+   with the same field list as the existing entries.
+
+The simplest way is to copy one of the existing three blocks and rename
+`name`, `label`, `path`, and every `options.media` reference inside it.
+
+**Note on `single` mode:** clubs using the classic long-scroll design
+(`"siteMode": "single"`) still show the theme, "More tab text", and
+quick-link icon fields in the Pages CMS editor, but the classic template
+ignores all of them — editing those fields for a `single`-mode club has no
+visible effect on that club's site.
+
 ## Deploying to Cloudflare
 
 Each club gets its **own** Cloudflare Pages/Workers project, all pointed at

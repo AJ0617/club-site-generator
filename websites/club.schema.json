@@ -13,6 +13,23 @@
     "siteMode":    { "type": "string", "enum": ["dynamic", "single", "multipage"] },
     "tagline":     { "type": "string" },
     "heroImage":   { "type": "string", "minLength": 1 },
+    "moreText":    { "type": "string" },
+    "theme": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "primaryColor":     { "type": "string", "pattern": "^#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$" },
+        "accentColor":      { "type": "string", "pattern": "^#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$" },
+        "accentTextColor":  { "type": "string", "pattern": "^#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$" },
+        "backgroundColor":  { "type": "string", "pattern": "^#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$" },
+        "surfaceColor":     { "type": "string", "pattern": "^#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$" },
+        "textColor":        { "type": "string", "pattern": "^#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$" },
+        "mutedTextColor":   { "type": "string", "pattern": "^#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$" },
+        "borderColor":      { "type": "string", "pattern": "^#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$" },
+        "headingFont":      { "type": "string", "minLength": 1 },
+        "bodyFont":         { "type": "string", "minLength": 1 }
+      }
+    },
     "links": {
       "type": "array",
       "items": {
@@ -21,7 +38,8 @@
         "required": ["label", "url"],
         "properties": {
           "label": { "type": "string", "minLength": 1 },
-          "url":   { "type": "string", "minLength": 1 }
+          "url":   { "type": "string", "minLength": 1 },
+          "icon":  { "type": "string", "minLength": 1 }
         }
       }
     },
@@ -58,8 +76,10 @@
         "additionalProperties": false,
         "required": ["title", "year"],
         "properties": {
-          "title": { "type": "string", "minLength": 1 },
-          "year":  { "type": "integer", "minimum": 1900, "maximum": 2100 }
+          "title":       { "type": "string", "minLength": 1 },
+          "year":        { "type": "integer", "minimum": 1900, "maximum": 2100 },
+          "description": { "type": "string" },
+          "featured":    { "type": "boolean" }
         }
       }
     },

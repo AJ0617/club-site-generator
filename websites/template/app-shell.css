@@ -19,6 +19,7 @@
     --hero-wash: linear-gradient(180deg, rgba(15,23,40,0) 0%, rgba(15,23,40,.85) 100%);
     --hero-fallback-bg: linear-gradient(135deg, #1e3a5f, #2b6cb0);
     --head-font: "Newsreader", Georgia, "Times New Roman", serif;
+    --body-font: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     --sidebar-w: 72px; /* mobile-first default = icon rail */
 }
 
@@ -26,7 +27,7 @@
 html { scroll-behavior: smooth; }
 body {
     margin: 0;
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: var(--body-font);
     font-size: 16px;
     line-height: 1.6;
     color: var(--text);
@@ -179,7 +180,7 @@ a { color: inherit; }
     background: var(--surface); border-radius: var(--radius-lg); padding: 16px;
     text-align: center; text-decoration: none; display: block;
 }
-.quick-link-icon { display: block; width: 24px; height: 24px; margin: 0 auto 8px; color: var(--primary); }
+.quick-link-icon { display: block; width: 24px; height: 24px; margin: 0 auto 8px; color: var(--primary); object-fit: contain; }
 .quick-link-label { display: block; font-size: .84rem; font-weight: 600; color: var(--text); }
 
 /* ---------- Events tab ---------- */
@@ -218,6 +219,7 @@ a { color: inherit; }
 .award-card { display: flex; align-items: center; gap: 14px; background: var(--surface); border-radius: 14px; padding: 14px 16px; }
 .award-year { flex: 0 0 auto; font-weight: 800; font-size: .78rem; color: var(--accent-text); background: var(--accent); border-radius: 8px; padding: 6px 9px; }
 .award-title { margin: 0; font-size: .88rem; color: var(--text); }
+.award-desc { margin: 3px 0 0; font-size: .78rem; color: var(--muted); }
 
 .gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 0; padding: 0; }
 .gallery-item { margin: 0; border-radius: 14px; overflow: hidden; }

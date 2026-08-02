@@ -126,6 +126,7 @@ a { color: var(--primary); }
 }
 .award-year { flex: 0 0 auto; font-weight: 800; color: var(--accent); background: #1f2733; border-radius: 8px; padding: 8px 12px; }
 .award-title { margin: 0; }
+.award-desc { margin: 4px 0 0; font-size: .85rem; color: var(--muted); }
 
 /* ---------- Gallery ---------- */
 .gallery-grid { display: grid; gap: 12px; grid-template-columns: 1fr; margin: 0; padding: 0; }
