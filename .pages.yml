@@ -172,7 +172,6 @@ content:
       - name: images
         label: "Gallery Images"
         type: image
-        list: true
         options:
           media: example-club-images
           multiple:
@@ -331,7 +330,6 @@ content:
       - name: images
         label: "Gallery Images"
         type: image
-        list: true
         options:
           media: demo-multi-images
           multiple:
@@ -490,7 +488,6 @@ content:
       - name: images
         label: "Gallery Images"
         type: image
-        list: true
         options:
           media: demo-single-images
           multiple:
